@@ -1,0 +1,12 @@
+
+.metadata/
+
+diffBotSim/.settings/
+
+diffBotSim/bin/
+
+diffBotSim/.project
+
+diffBotSim/build.fxbuild
+
+diffBotSim/.classpath
