@@ -9,15 +9,22 @@ import javafx.scene.layout.BorderPane;
 public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
-		try {
-			BorderPane root = new BorderPane();
-			Scene scene = new Scene(root,400,400);
-			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-			primaryStage.setScene(scene);
-			primaryStage.show();
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
+		RobotGraphics robot = new RobotGraphics();
+		
+		robot.setRobotLength(2.0);
+		robot.setWheelsRadius(0.05, 0.05);
+		robot.setWorkspaceDimensions(10, 10);
+		robot.setRobotPose(5, 5);
+		robot.setWheelsSeparation(0.2);
+		robot.setRobotOrientation(Math.PI);
+		
+		robot.setWheelsSpeed(0.9, 0.9);
+		
+		robot.startAnimation();
+		
+		Scene scene = new Scene(robot,400,400);
+		primaryStage.setScene(scene);
+		primaryStage.show();
 	}
 	
 	public static void main(String[] args) {

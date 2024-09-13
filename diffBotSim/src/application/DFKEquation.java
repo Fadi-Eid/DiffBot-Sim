@@ -3,7 +3,7 @@ package application;
 
 abstract class DFKEquation {
 	
-	public double computeXVel(RobotGraphics robot) {
+	public static double computeXVel(RobotGraphics robot) {
 		double rR = robot.getRightWheelRadius();
 		double rL = robot.getLeftWheelRadius();
 		double theta = robot.getRobotOrientation();
@@ -15,7 +15,7 @@ abstract class DFKEquation {
 		
 		return xVel;
 	}
-	public double computeYVel(RobotGraphics robot) {
+	public static double computeYVel(RobotGraphics robot) {
 		double rR = robot.getRightWheelRadius();
 		double rL = robot.getLeftWheelRadius();
 		double theta = robot.getRobotOrientation();
@@ -27,7 +27,7 @@ abstract class DFKEquation {
 		
 		return xVel;
 	}
-	public double computeAngularVel(RobotGraphics robot) {
+	public static double computeAngularVel(RobotGraphics robot) {
 		double rR = robot.getRightWheelRadius();
 		double rL = robot.getLeftWheelRadius();
 		double phiR = robot.getRightWheelSpeed();
