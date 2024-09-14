@@ -7,7 +7,8 @@ At my company, a team of four of us tackled this exact challenge. After much del
 
 Here is a screeshot of the result:
 
-![alt text](image.png)
+![image](https://github.com/user-attachments/assets/71872232-c10b-44a7-abb8-efee2de349fe)
+
 
 # Features
 DiffBot-Sim is not just a visualizer, it is an accurate simulator that solves the __differential forward kinematics equation__ of your particular robot. The simulator takes into consideration the following parameters:
@@ -134,17 +135,18 @@ You can modify the logic inside `JoystickRobotLogic` to suit your needs. The cur
 The simualator supports four different types of differential drive robot, selected via the `setRobotShape(Shape shape)` method.
 1. `RobotGraphics.Shape.CENTERED_CIRCLE`: A circular robot body with centrally positioned differential wheels. In this case, the 'robot length' refers to the diameter of the circular body.
 
-![alt text](image-1.png)
+![image](https://github.com/user-attachments/assets/c3f15227-1b1d-489c-a627-2e44295215e1)
 
 2. `RobotGraphics.Shape.CENTERED_SQUARED`: A rectangular robot with centrally positioned differential wheels. In this case, the robot's length refers to its actual length (the longer side in the screenshot), while the wheel separation distance corresponds to the robot's body width (the shorter side in the screenshot).
 
-![alt text](image-2.png)
+![image](https://github.com/user-attachments/assets/9e33ecfd-11a2-477a-90d1-1b6d22f4ada5)
 
 3. `RobotGraphics.Shape.FRONT_WHEEL`: A rectangular robot featuring differential drive wheels at the front and a caster wheel at the rear.
 
-![alt text](image-3.png)
+![image](https://github.com/user-attachments/assets/03d3c130-0433-4a4a-abe6-571eb221870a)
 
 4. `RobotGraphics.Shape.REAR_WHEEL`: A rectangular robot featuring differential drive wheels at the rear and a caster wheel at the front.
 
-![alt text](image-4.png)
+![image](https://github.com/user-attachments/assets/9f960240-1b1c-462d-838b-2346d478d9a9)
+
 
