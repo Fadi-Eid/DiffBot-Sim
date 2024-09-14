@@ -1,5 +1,7 @@
 package application;
 
+import javax.naming.CannotProceedException;
+
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
@@ -45,12 +47,22 @@ public class RobotGraphics extends Pane {
 		animation.setCycleCount(Timeline.INDEFINITE);
 	}
 	
-	// Start animation after setting the parameters (TODO: Safety check if the parameters are all set)
-	public void startAnimation() {
-		// Check if all the parameters had been set
-		animation.play();
+	public void startAnimation() throws CannotProceedException {
+		if(isRobotLengthSet&&isXPoseSet&&isYPoseSet&&isWorkspaceWidthSet&&isWorkspaceHeightSet)
+			if(isWheelSeparationSet&&isRightWheelRadiusSet&&isLeftWheelRadiusSet) {
+				animation.play();
+				return;
+			}
+		throw new CannotProceedException("Not all required parameters are set. Make sure the following"
+				+ "parameters are correctly set:"
+				+ "* Robot Length\n"
+				+ "* Robot x & y Pose\n"
+				+ "* Workspace width\n"
+				+ "* Workspace height\n"
+				+ "* Wheels separation\n"
+				+ "* Right wheel radius\n"
+				+ "* Left wheel radius");
 	}
-	
 	
 	private void animationLoop() {
 		this.xVel = DFKEquation.computeXVel(this);	// m/s
@@ -150,7 +162,7 @@ public class RobotGraphics extends Pane {
 	}
 	void setWorkspaceDimensions(double workspaceWidth, double workspaceHeight) {
 		if(workspaceWidth < 0.1 || workspaceHeight < 0.1) {
-			throw new IllegalArgumentException("Wheel radius must be > 0.1 m");
+			throw new IllegalArgumentException("Workspace dimensions are too small");
 		}
 		this.workspaceWidth = workspaceWidth;
 		this.workspaceHeight = workspaceHeight;
@@ -158,12 +170,6 @@ public class RobotGraphics extends Pane {
 		this.isWorkspaceWidthSet = true;
 	}
 	void setRobotPose(double x, double y) {
-		if(x < 0.0 || x > this.workspaceWidth) {
-			throw new IllegalArgumentException("Robot x pose is out of bound");
-		}
-		if(y < 0.0 || y > this.workspaceHeight) {
-			throw new IllegalArgumentException("Robot y pose is out of bound");
-		}
 		this.xPose = x;
 		this.yPose = y;
 		this.isXPoseSet = true;
