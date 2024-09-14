@@ -107,18 +107,39 @@ public class RobotGraphics extends Pane {
 		
 		double robotLength_ = DimensionsMapper.metersToPixelsX(this, this.robotLength);
 		double wheelsSeparation_ = DimensionsMapper.metersToPixelsY(this, this.wheelsSeparation);
-		double workspaceHeight_ = DimensionsMapper.metersToPixelsY(this, this.workspaceHeight);
 		
 		// Position the robot body
 		robotBody.setWidth(robotLength_);
 		robotBody.setHeight(wheelsSeparation_);
 		robotBody.setX(this.xPose_ - robotLength_/2);
-		robotBody.setY(workspaceHeight_ - this.yPose_ - wheelsSeparation_/2);
+		robotBody.setY(this.getHeight() - this.yPose_ - wheelsSeparation_/2);
 		robotBody.setRotate(-this.orientation_);
 		robotBody.setFill(Color.RED);
-		this.getChildren().add(robotBody);
 		
 		// Position the robot left wheel
+		double leftWheelRadius_ = DimensionsMapper.metersToPixelsX(this, this.leftWheelRadius);
+		double leftWheelX_ = this.xPose_ - (wheelsSeparation_/2) * Math.cos(Math.PI/2 - this.orientation) - leftWheelRadius_;
+		double leftWheelY_ = this.getHeight() - this.yPose_ - (wheelsSeparation_/2) * Math.sin(Math.PI/2 - this.orientation) - leftWheelRadius_/2.6;
+		leftWheel.setX(leftWheelX_);
+		leftWheel.setY(leftWheelY_);
+		leftWheel.setHeight(leftWheelRadius_/1.3);
+		leftWheel.setWidth(leftWheelRadius_*2);
+		leftWheel.setRotate(-this.orientation_);
+		leftWheel.setFill(Color.BLACK);
+		
+		// Position the robot left wheel
+		double rightWheelRadius_ = DimensionsMapper.metersToPixelsX(this, this.rightWheelRadius);
+		double rightWheelX_ = this.xPose_ + (wheelsSeparation_/2) * Math.cos(Math.PI/2 - this.orientation) - rightWheelRadius_;
+		double rightWheelY_ = this.getHeight() - this.yPose_ + (wheelsSeparation_/2) * Math.sin(Math.PI/2 - this.orientation) - rightWheelRadius_/2.6;
+		rightWheel.setX(rightWheelX_);
+		rightWheel.setY(rightWheelY_);
+		rightWheel.setHeight(rightWheelRadius_/1.3);
+		rightWheel.setWidth(rightWheelRadius_*2);
+		rightWheel.setRotate(-this.orientation_);
+		rightWheel.setFill(Color.BLACK);
+		
+		this.getChildren().addAll(robotBody, leftWheel, rightWheel);
+		
 		
 	}
 	private void paintRearWheel() {
@@ -179,9 +200,17 @@ public class RobotGraphics extends Pane {
 		this.orientation = theta;
 	}
 	void setWheelsSpeed(double leftWheelSpeed, double rightWheelSpeed) {
+		if(Math.abs(rightWheelSpeed) > this.maxRightWheelSpeed || Math.abs(leftWheelSpeed) > this.maxLeftWheelSpeed) {
+			throw new IllegalArgumentException("Wheel speed limit violated. Wheel speed not changed");
+		}
 		this.rightWheelSpeed = rightWheelSpeed;
 		this.leftWheelSpeed = leftWheelSpeed;
 	}
+	void setMaxWheelsSpeed(double maxLeft, double maxRight) {
+		this.maxLeftWheelSpeed = maxLeft;
+		this.maxRightWheelSpeed = maxRight;
+	}
+	
 	double getRightWheelRadius() { return this.rightWheelRadius; }
 	double getLeftWheelRadius()  { return this.leftWheelRadius;  }
 	double getRobotOrientation() { return this.orientation;		 }
