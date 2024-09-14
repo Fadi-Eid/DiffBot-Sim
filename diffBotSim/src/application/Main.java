@@ -11,14 +11,14 @@ public class Main extends Application {
 	public void start(Stage primaryStage) {
 		RobotGraphics robot = new RobotGraphics();
 		
-		robot.setRobotLength(2.0);
-		robot.setWheelsRadius(0.05, 0.05);
-		robot.setWorkspaceDimensions(10, 10);
-		robot.setRobotPose(5, 5);
-		robot.setWheelsSeparation(0.2);
-		robot.setRobotOrientation(Math.PI);
+		robot.setRobotLength(0.6);
+		robot.setWheelsSeparation(0.3);
+		robot.setWheelsRadius(0.15, 0.15);
+		robot.setWorkspaceDimensions(6, 6);
+		robot.setRobotPose(3, 3);
+		robot.setRobotOrientation(Math.PI / 2);
 		
-		robot.setWheelsSpeed(0.9, 0.9);
+		robot.setWheelsSpeed(+10.0, -10.00);
 		
 		robot.startAnimation();
 		

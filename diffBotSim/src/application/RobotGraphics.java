@@ -27,7 +27,10 @@ public class RobotGraphics extends Pane {
 	private double 		rightWheelSpeed = 0.0, leftWheelSpeed = 0.0;
 	private double		maxRightWheelSpeed = 5.0, maxLeftWheelSpeed = 5.0;
 	private double 		robotLength;
+	
+	// Note: Units are Pixels and Degrees
 	private double		xPose_, yPose_;
+	private double		orientation_;
 	
 	// flags that must be set to start the animation
 	boolean isRobotLengthSet, isXPoseSet, isYPoseSet, isWorkspaceWidthSet, isWorkspaceHeightSet,
@@ -55,11 +58,13 @@ public class RobotGraphics extends Pane {
 		this.angularVel = DFKEquation.computeAngularVel(this);	// rad/s
 		this.xPose += xVel/refreshRate;
 		this.yPose += yVel/refreshRate;
-		this.orientation += (this.angularVel * 180.0 / Math.PI)/refreshRate;
+		this.orientation += this.angularVel/refreshRate;
 		
 		// remap meters to pixels
 		this.xPose_ = DimensionsMapper.metersToPixelsX(this, this.xPose);
 		this.yPose_ = DimensionsMapper.metersToPixelsY(this, this.yPose);
+		// remap radians to degrees
+		this.orientation_ = this.orientation * 180.0 / Math.PI;
 		
 		this.getChildren().clear();
 		this.paint();
@@ -85,13 +90,24 @@ public class RobotGraphics extends Pane {
 	}
 	private void paintCenteredSquared() {
 		Rectangle robotBody = new Rectangle();
-		robotBody.setWidth(DimensionsMapper.metersToPixelsX(this, this.robotLength));
-		robotBody.setHeight(DimensionsMapper.metersToPixelsY(this, this.wheelsSeparation));
-		robotBody.setX(DimensionsMapper.metersToPixelsY(this, this.workspaceHeight)-this.xPose_);
-		robotBody.setY(this.yPose_);
-		robotBody.setRotate(this.orientation + 90.0);
+		Rectangle rightWheel = new Rectangle();
+		Rectangle leftWheel = new Rectangle();
+		
+		double robotLength_ = DimensionsMapper.metersToPixelsX(this, this.robotLength);
+		double wheelsSeparation_ = DimensionsMapper.metersToPixelsY(this, this.wheelsSeparation);
+		double workspaceHeight_ = DimensionsMapper.metersToPixelsY(this, this.workspaceHeight);
+		
+		// Position the robot body
+		robotBody.setWidth(robotLength_);
+		robotBody.setHeight(wheelsSeparation_);
+		robotBody.setX(this.xPose_ - robotLength_/2);
+		robotBody.setY(workspaceHeight_ - this.yPose_ - wheelsSeparation_/2);
+		robotBody.setRotate(-this.orientation_);
 		robotBody.setFill(Color.RED);
 		this.getChildren().add(robotBody);
+		
+		// Position the robot left wheel
+		
 	}
 	private void paintRearWheel() {
 		Rectangle robotBody = new Rectangle();
@@ -123,7 +139,7 @@ public class RobotGraphics extends Pane {
 		this.wheelsSeparation = wheelsSeparation;
 		this.isWheelSeparationSet = true;
 	}
-	void setWheelsRadius(double rightWheelRadius, double leftWheelRadius) {
+	void setWheelsRadius(double leftWheelRadius, double	rightWheelRadius) {
 		if(rightWheelRadius < 0.01 || leftWheelRadius < 0.01) {
 			throw new IllegalArgumentException("Wheel radius must be > 0.01 m");
 		}
@@ -156,7 +172,7 @@ public class RobotGraphics extends Pane {
 	void setRobotOrientation(double theta) {
 		this.orientation = theta;
 	}
-	void setWheelsSpeed(double rightWheelSpeed, double leftWheelSpeed) {
+	void setWheelsSpeed(double leftWheelSpeed, double rightWheelSpeed) {
 		this.rightWheelSpeed = rightWheelSpeed;
 		this.leftWheelSpeed = leftWheelSpeed;
 	}
