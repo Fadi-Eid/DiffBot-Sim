@@ -6,16 +6,18 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Point3D;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.transform.Rotate;
 import javafx.util.Duration;
 
 public class RobotGraphics extends Pane {
 	// Three shapes are supported
 	public enum Shape {
-		REAR_WHEEL, CENTERED_SQUARED, CENTERED_CIRCLE
+		FRONT_WHEEL, CENTERED_SQUARED, CENTERED_CIRCLE
 	}
 	// Note: Units are SI (Radiant, Meter, Second)
 	private Shape		shape = Shape.CENTERED_SQUARED;
@@ -90,8 +92,8 @@ public class RobotGraphics extends Pane {
 		else if(this.shape == Shape.CENTERED_SQUARED) {
 			this.paintCenteredSquared();
 		}
-		else if(this.shape == Shape.REAR_WHEEL) {
-			this.paintRearWheel();
+		else if(this.shape == Shape.FRONT_WHEEL) {
+			this.paintFrontWheel();
 		}
 	}
 	
@@ -127,7 +129,7 @@ public class RobotGraphics extends Pane {
 		leftWheel.setRotate(-this.orientation_);
 		leftWheel.setFill(Color.BLACK);
 		
-		// Position the robot left wheel
+		// Position the robot right wheel
 		double rightWheelRadius_ = DimensionsMapper.metersToPixelsX(this, this.rightWheelRadius);
 		double rightWheelX_ = this.xPose_ + (wheelsSeparation_/2) * Math.cos(Math.PI/2 - this.orientation) - rightWheelRadius_;
 		double rightWheelY_ = this.getHeight() - this.yPose_ + (wheelsSeparation_/2) * Math.sin(Math.PI/2 - this.orientation) - rightWheelRadius_/2.6;
@@ -139,14 +141,61 @@ public class RobotGraphics extends Pane {
 		rightWheel.setFill(Color.BLACK);
 		
 		this.getChildren().addAll(robotBody, leftWheel, rightWheel);
-		
-		
 	}
-	private void paintRearWheel() {
+	
+	private void paintFrontWheel() {
 		Rectangle robotBody = new Rectangle();
 		Rectangle rightWheel = new Rectangle();
 		Rectangle leftWheel = new Rectangle();
+		Circle caster = new Circle();
+		
+		double robotLength_ = DimensionsMapper.metersToPixelsX(this, this.robotLength);
+		double wheelsSeparation_ = DimensionsMapper.metersToPixelsY(this, this.wheelsSeparation);
+		
+		// Position the robot body
+		robotBody.setWidth(robotLength_);
+		robotBody.setHeight(wheelsSeparation_);
+		robotBody.setX(this.xPose_ - robotLength_);
+		robotBody.setY(this.getHeight() - this.yPose_ - wheelsSeparation_/2);
+		robotBody.getTransforms().add(new Rotate(-this.orientation_, this.xPose_, this.getHeight() - this.yPose_));
+		robotBody.setFill(Color.LIGHTSKYBLUE);
+		
+		// Position the robot left wheel
+		double leftWheelRadius_ = DimensionsMapper.metersToPixelsX(this, this.leftWheelRadius);
+		double leftWheelX_ = this.xPose_ - (wheelsSeparation_/2) * Math.cos(Math.PI/2 - this.orientation) - leftWheelRadius_;
+		double leftWheelY_ = this.getHeight() - this.yPose_ - (wheelsSeparation_/2) * Math.sin(Math.PI/2 - this.orientation) - leftWheelRadius_/2.6;
+		leftWheel.setX(leftWheelX_);
+		leftWheel.setY(leftWheelY_);
+		leftWheel.setHeight(leftWheelRadius_/1.3);
+		leftWheel.setWidth(leftWheelRadius_*2);
+		leftWheel.setRotate(-this.orientation_);
+		leftWheel.setFill(Color.BLACK);
+		
+		// Position the robot right wheel
+		double rightWheelRadius_ = DimensionsMapper.metersToPixelsX(this, this.rightWheelRadius);
+		double rightWheelX_ = this.xPose_ + (wheelsSeparation_/2) * Math.cos(Math.PI/2 - this.orientation) - rightWheelRadius_;
+		double rightWheelY_ = this.getHeight() - this.yPose_ + (wheelsSeparation_/2) * Math.sin(Math.PI/2 - this.orientation) - rightWheelRadius_/2.6;
+		rightWheel.setX(rightWheelX_);
+		rightWheel.setY(rightWheelY_);
+		rightWheel.setHeight(rightWheelRadius_/1.3);
+		rightWheel.setWidth(rightWheelRadius_*2);
+		rightWheel.setRotate(-this.orientation_);
+		rightWheel.setFill(Color.BLACK);
+		
+		// Position the caster wheel
+		double casterDist_ = 0.75 * robotLength_;
+		double casterX_ = xPose_ - Math.cos(this.orientation)*casterDist_;
+		double casterY_ = this.getHeight() - yPose_ + Math.sin(this.orientation)*casterDist_;
+		caster.setRadius(rightWheelRadius_/4.0);
+		caster.setCenterX(casterX_);
+		caster.setCenterY(casterY_);
+		caster.setFill(Color.BLACK);
+		
+		this.getChildren().addAll(robotBody, leftWheel, rightWheel, caster);
 	}
+	
+	
+	
 	void setRefreshRate(double rate) {
 		if(rate < 1.0) {
 			throw new IllegalArgumentException("Animation update rate must be > 1");
