@@ -42,6 +42,8 @@ public class RobotGraphics extends Pane {
 	private Timeline animation;
 	private EventHandler<ActionEvent> eventHandler = e -> { this.animationLoop(); };
 	
+	private Joystick joystick;
+	
 	public RobotGraphics() {
 		// start the animation loop
 		animation = new Timeline(new KeyFrame(Duration.millis(1/this.refreshRate * 1000), eventHandler));
@@ -66,6 +68,9 @@ public class RobotGraphics extends Pane {
 	}
 	
 	private void animationLoop() {
+		if(this.joystick != null) {
+			new JoystickRobotLogic(this, this.joystick);
+		}
 		this.xVel = DFKEquation.computeXVel(this);	// m/s
 		this.yVel = DFKEquation.computeYVel(this);	// m/s
 		this.angularVel = DFKEquation.computeAngularVel(this);	// rad/s
@@ -281,6 +286,10 @@ public class RobotGraphics extends Pane {
 		this.getChildren().addAll(robotBody, leftWheel, rightWheel, caster);
 	}
 	
+	public void connectJoystick(Joystick joystick) {
+		this.joystick = joystick;
+	}
+	
 	
 	void setRobotShape(Shape shape) {
 		this.shape = shape;
@@ -348,6 +357,9 @@ public class RobotGraphics extends Pane {
 	double getWheelsSeparation() { return this.wheelsSeparation; }
 	double getWorkspaceWidth()	 { return this.workspaceWidth;	 }
 	double getWorkspaceHeight()	 { return this.workspaceHeight;	 }
+	
+	double getMaxRightWheelSpeed() { return this.maxRightWheelSpeed; }
+	double getMaxLeftWheelSpeed() { return this.maxLeftWheelSpeed; }
 	
 	@Override
 	public void setWidth(double width) {
