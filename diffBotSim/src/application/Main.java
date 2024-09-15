@@ -12,8 +12,8 @@ public class Main extends Application {
 	public void start(Stage primaryStage) {
 		RobotGraphics robot = new RobotGraphics();
 		
-		robot.setRobotShape(RobotGraphics.Shape.REAR_WHEEL);
-		robot.setRobotLength(0.8);
+		robot.setRobotShape(RobotGraphics.Shape.CENTERED_CIRCLE);
+		robot.setRobotLength(0.5);
 		robot.setWheelsSeparation(0.6);
 		robot.setWheelsRadius(0.16, 0.16);
 		robot.setWorkspaceDimensions(6, 6);

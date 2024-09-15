@@ -103,6 +103,40 @@ public class RobotGraphics extends Pane {
 		Circle robotBody = new Circle();
 		Rectangle rightWheel = new Rectangle();
 		Rectangle leftWheel = new Rectangle();
+		
+		double robotLength_ = DimensionsMapper.metersToPixelsX(this, this.robotLength);
+		double wheelsSeparation_ = DimensionsMapper.metersToPixelsY(this, this.wheelsSeparation);
+		
+		// Position the robot body
+		robotBody.setRadius(robotLength_/2);
+		robotBody.setCenterX(this.xPose_);
+		robotBody.setCenterY(this.getHeight() - this.yPose_);
+		robotBody.setFill(Color.PALEVIOLETRED);
+		
+		// Position the robot left wheel
+		double leftWheelRadius_ = DimensionsMapper.metersToPixelsX(this, this.leftWheelRadius);
+		double leftWheelX_ = this.xPose_ - (wheelsSeparation_/2) * Math.cos(Math.PI/2 - this.orientation) - leftWheelRadius_;
+		double leftWheelY_ = this.getHeight() - this.yPose_ - (wheelsSeparation_/2) * Math.sin(Math.PI/2 - this.orientation) - leftWheelRadius_/2.6;
+		leftWheel.setX(leftWheelX_);
+		leftWheel.setY(leftWheelY_);
+		leftWheel.setHeight(leftWheelRadius_/1.3);
+		leftWheel.setWidth(leftWheelRadius_*2);
+		leftWheel.setRotate(-this.orientation_);
+		leftWheel.setFill(Color.BLACK);
+		
+		// Position the robot right wheel
+		double rightWheelRadius_ = DimensionsMapper.metersToPixelsX(this, this.rightWheelRadius);
+		double rightWheelX_ = this.xPose_ + (wheelsSeparation_/2) * Math.cos(Math.PI/2 - this.orientation) - rightWheelRadius_;
+		double rightWheelY_ = this.getHeight() - this.yPose_ + (wheelsSeparation_/2) * Math.sin(Math.PI/2 - this.orientation) - rightWheelRadius_/2.6;
+		rightWheel.setX(rightWheelX_);
+		rightWheel.setY(rightWheelY_);
+		rightWheel.setHeight(rightWheelRadius_/1.3);
+		rightWheel.setWidth(rightWheelRadius_*2);
+		rightWheel.setRotate(-this.orientation_);
+		rightWheel.setFill(Color.BLACK);
+		
+		this.getChildren().addAll(robotBody, leftWheel, rightWheel);
+		
 	}
 	private void paintCenteredSquared() {
 		Rectangle robotBody = new Rectangle();
