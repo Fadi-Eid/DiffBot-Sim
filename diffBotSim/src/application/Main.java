@@ -12,7 +12,7 @@ public class Main extends Application {
 	public void start(Stage primaryStage) {
 		RobotGraphics robot = new RobotGraphics();
 		
-		robot.setRobotShape(RobotGraphics.Shape.FRONT_WHEEL);
+		robot.setRobotShape(RobotGraphics.Shape.REAR_WHEEL);
 		robot.setRobotLength(0.8);
 		robot.setWheelsSeparation(0.6);
 		robot.setWheelsRadius(0.16, 0.16);
@@ -21,7 +21,7 @@ public class Main extends Application {
 		robot.setRobotOrientation(Math.PI / 4);
 		robot.setMaxWheelsSpeed(15.0, 15.0);
 		
-		robot.setWheelsSpeed(-4.0, 0.0);
+		robot.setWheelsSpeed(4.0, 2.0);
 		
 		try {
 			robot.startAnimation();
