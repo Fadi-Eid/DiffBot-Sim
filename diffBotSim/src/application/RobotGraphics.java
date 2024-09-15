@@ -14,6 +14,7 @@ import javafx.scene.transform.Rotate;
 import javafx.util.Duration;
 
 public class RobotGraphics extends Pane {
+	private final double refreshRate = 60.0; // 1/DT (Hz)
 	// Three shapes are supported
 	public enum Shape {
 		FRONT_WHEEL, CENTERED_SQUARED, CENTERED_CIRCLE, REAR_WHEEL
@@ -26,7 +27,6 @@ public class RobotGraphics extends Pane {
 	private double 		xPose, yPose;
 	private double 		xVel, yVel, angularVel;
 	private double 		orientation = 0.0;
-	private double 		refreshRate = 50.0; // 1/DT (Hz)
 	private double 		rightWheelSpeed = 0.0, leftWheelSpeed = 0.0;
 	private double		maxRightWheelSpeed = 5.0, maxLeftWheelSpeed = 5.0;
 	private double 		robotLength;
@@ -282,14 +282,6 @@ public class RobotGraphics extends Pane {
 	}
 	
 	
-	
-	void setRefreshRate(double rate) {
-		if(rate < 1.0) {
-			throw new IllegalArgumentException("Animation update rate must be > 1");
-		}
-		this.refreshRate = rate;
-		animation = new Timeline(new KeyFrame(Duration.millis(1/this.refreshRate * 1000), eventHandler));
-	}
 	void setRobotShape(Shape shape) {
 		this.shape = shape;
 		this.paint();

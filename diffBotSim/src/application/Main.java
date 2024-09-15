@@ -12,6 +12,7 @@ public class Main extends Application {
 	public void start(Stage primaryStage) {
 		RobotGraphics robot = new RobotGraphics();
 		
+		// Units are SI (meters, radians, seconds)
 		robot.setRobotShape(RobotGraphics.Shape.CENTERED_CIRCLE);
 		robot.setRobotLength(0.5);
 		robot.setWheelsSeparation(0.6);
