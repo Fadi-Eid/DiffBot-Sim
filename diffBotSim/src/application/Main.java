@@ -9,7 +9,8 @@ import javafx.scene.Scene;
 
 public class Main extends Application {
 	@Override
-	public void start(Stage primaryStage) {
+	public void start(Stage primaryStage) throws CannotProceedException {
+		
 		RobotGraphics robot = new RobotGraphics();
 		Joystick joystick = new Joystick(250, 250);
 		
@@ -23,21 +24,18 @@ public class Main extends Application {
 		robot.setRobotOrientation(Math.PI / 2);
 		robot.setMaxWheelsSpeed(9.0, 9.0);
 		robot.connectJoystick(joystick);
-		
-		try {
-			robot.startAnimation();
-		} catch (CannotProceedException e) {
-			e.printStackTrace();
-		}
+		robot.startAnimation();
 		
 		Scene scene = new Scene(robot,800,400);
 		primaryStage.setScene(scene);
+		primaryStage.setTitle("Differential Robot Simulator");
 		primaryStage.show();
 		
         Stage joystickStage = new Stage();
         Scene joystickScene = new Scene(joystick);
         joystickStage.setScene(joystickScene);
         joystickStage.setResizable(false);
+        joystickStage.setTitle("Controller");
         joystickStage.show();
         
 	}

@@ -9,6 +9,7 @@ import javafx.event.EventHandler;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Rotate;
 import javafx.util.Duration;
@@ -90,6 +91,20 @@ public class RobotGraphics extends Pane {
 	
 	
 	private void paint() {
+		// draw x/y lines for every meter
+		for(int i = 1; i < (int)this.workspaceWidth; i++) {
+			double section = this.getWidth()/this.workspaceWidth;
+			Line line = new Line(i*section, 0.0, i*section, this.getHeight());
+			line.setStrokeWidth(0.15);
+			this.getChildren().add(line);
+		}
+		for(int i = 1; i < (int)this.workspaceHeight; i++) {
+			double section = this.getHeight()/this.workspaceHeight;
+			Line line = new Line(0.0, i*section, this.getWidth(), i*section);
+			line.setStrokeWidth(0.2);
+			line.setStroke(Color.LIGHTSLATEGREY);
+			this.getChildren().add(line);
+		}
 		if(this.shape == Shape.CENTERED_CIRCLE) {
 			this.paintCenteredCircle();
 		}

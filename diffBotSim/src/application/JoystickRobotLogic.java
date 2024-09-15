@@ -17,10 +17,7 @@ public class JoystickRobotLogic {
         if (maxWheelVel > maxLeftVel || maxWheelVel > maxRightVel) {
             leftWheelVel = (leftWheelVel / maxWheelVel) * maxLeftVel;
             rightWheelVel = (rightWheelVel / maxWheelVel) * maxRightVel;
-        }
-		
-		
+        }		
 		robot.setWheelsSpeed(leftWheelVel, rightWheelVel);
-		
 	}
 }
