@@ -77,6 +77,25 @@ public class RobotGraphics extends Pane {
 		this.angularVel = DFKEquation.computeAngularVel(this);	// rad/s
 		this.xPose += xVel/refreshRate;
 		this.yPose += yVel/refreshRate;
+
+		// Check borders and change border color to red if there is a collision
+		this.setStyle("-fx-border-color: black; -fx-border-width: 2px;");
+		if(this.xPose > this.workspaceWidth) {
+			this.xPose = this.workspaceWidth;
+			this.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+		}
+		else if(this.xPose < 0) {
+			this.xPose = 0.0;
+			this.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+		}
+		if(this.yPose > this.workspaceHeight) {
+			this.yPose = this.workspaceHeight;
+			this.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+		}
+		else if(this.yPose < 0) {
+			this.yPose = 0.0;
+			this.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+		}
 		this.orientation += this.angularVel/refreshRate;
 		
 		// remap meters to pixels
