@@ -16,11 +16,11 @@ public class Main extends Application {
 		
 		// Units are SI (meters, radians, seconds)
 		robot.setRobotShape(RobotGraphics.Shape.CENTERED_SQUARED);
-		robot.setRobotLength(1.2);
-		robot.setWheelsSeparation(0.6);
-		robot.setWheelsRadius(0.3, 0.3);
+		robot.setRobotLength(2.2);
+		robot.setWheelsSeparation(1.6);
+		robot.setWheelsRadius(0.4, 0.4);
 		robot.setWorkspaceDimensions(32, 16);
-		robot.setRobotPose(8, 0.9);
+		robot.setRobotPose(8, 1.9);
 		robot.setRobotOrientation(Math.PI / 2);
 		robot.setMaxWheelsSpeed(9.0, 9.0);
 		robot.connectJoystick(joystick);
