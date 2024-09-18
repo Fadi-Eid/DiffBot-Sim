@@ -36,6 +36,10 @@ public class RobotGraphics extends Pane {
 	private double		xPose_, yPose_;
 	private double		orientation_;
 	
+	// Some flags for optimization
+	private boolean		isCollision = false;
+	private boolean		wasRed = false;
+	
 	// flags that must be set to start the animation
 	boolean isRobotLengthSet, isXPoseSet, isYPoseSet, isWorkspaceWidthSet, isWorkspaceHeightSet,
 			isWheelSeparationSet, isRightWheelRadiusSet, isLeftWheelRadiusSet;
@@ -49,6 +53,7 @@ public class RobotGraphics extends Pane {
 		// start the animation loop
 		animation = new Timeline(new KeyFrame(Duration.millis(1/this.refreshRate * 1000), eventHandler));
 		animation.setCycleCount(Timeline.INDEFINITE);
+		this.setStyle("-fx-border-color: black; -fx-border-width: 2px;");
 	}
 	
 	public void startAnimation() throws CannotProceedException {
@@ -77,25 +82,26 @@ public class RobotGraphics extends Pane {
 		this.angularVel = DFKEquation.computeAngularVel(this);	// rad/s
 		this.xPose += xVel/refreshRate;
 		this.yPose += yVel/refreshRate;
-
-		// Check borders and change border color to red if there is a collision
-		this.setStyle("-fx-border-color: black; -fx-border-width: 2px;");
+		
+		this.isCollision = false;
+		
 		if(this.xPose > this.workspaceWidth) {
 			this.xPose = this.workspaceWidth;
-			this.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+			this.isCollision = true;
 		}
 		else if(this.xPose < 0) {
 			this.xPose = 0.0;
-			this.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+			this.isCollision = true;
 		}
-		if(this.yPose > this.workspaceHeight) {
+		else if(this.yPose > this.workspaceHeight) {
 			this.yPose = this.workspaceHeight;
-			this.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+			this.isCollision = true;
 		}
 		else if(this.yPose < 0) {
 			this.yPose = 0.0;
-			this.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+			this.isCollision = true;
 		}
+		
 		this.orientation += this.angularVel/refreshRate;
 		
 		// remap meters to pixels
@@ -110,6 +116,20 @@ public class RobotGraphics extends Pane {
 	
 	
 	private void paint() {
+		// Draw border collision if needed
+		if(this.isCollision) {
+			if(!this.wasRed) {
+				this.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+				this.wasRed = true;
+				System.out.println("Painted to red");
+			}
+		}
+		else if(this.wasRed) {
+			this.setStyle("-fx-border-color: black; -fx-border-width: 2px;");
+			this.wasRed = false;
+			System.out.println("Paint to black");
+		}
+			
 		// draw x/y lines for every meter
 		for(int i = 1; i < (int)this.workspaceWidth; i++) {
 			double section = this.getWidth()/this.workspaceWidth;
@@ -124,6 +144,7 @@ public class RobotGraphics extends Pane {
 			line.setStroke(Color.LIGHTSLATEGREY);
 			this.getChildren().add(line);
 		}
+			
 		if(this.shape == Shape.CENTERED_CIRCLE) {
 			this.paintCenteredCircle();
 		}
