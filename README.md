@@ -5,9 +5,17 @@ At my company, a team of four of us tackled this exact challenge. After much del
 
 **DiffBot-Sim** is a personal effort to streamline this process. It provides a joystick GUI, a customizable simulated differential drive robot, and a single function where you can implement your desired control logic. In just 5-7 lines of code, you can start testing different strategies immediately.
 
-Here is a screeshot of the result:
+Here are some highlights:
 
-![image](https://github.com/user-attachments/assets/71872232-c10b-44a7-abb8-efee2de349fe)
+![image](https://github.com/user-attachments/assets/09ac70b6-48fc-48e2-89b2-6081a113895c)
+
+
+![image](https://github.com/user-attachments/assets/0329c1e1-a8b2-4e6d-a691-a9e78b871a98)
+
+
+![image](https://github.com/user-attachments/assets/d2f7666e-e458-4660-b24b-284e7fb4909c)
+
+
 
 
 # Features
@@ -41,6 +49,7 @@ Below is a basic example of how to set up and run the differential drive robot s
     robot.setWheelsSeparation(1.9); // Distance between the wheels (in meters)
     robot.setWheelsRadius(0.6, 0.6); // Radius of the left and right wheels (in meters)
     robot.setWorkspaceDimensions(32, 16); // Size of the workspace (width x height in meters)
+    robot.showTrailer(true);
     robot.setRobotPose(8, 0.9); // Initial position (x, y in meters)
     robot.setRobotOrientation(Math.PI / 2); // Initial orientation (in radians)
     robot.setMaxWheelsSpeed(9.0, 9.0); // Max speed for the left and right wheels (in m/s)
@@ -108,6 +117,7 @@ This class manages the graphical representation of the robot, including its size
 * `setRobotPose(double x, double y)`: Sets the initial position of the robot (in meters).
 * `setRobotOrientation(double orientation)`: Sets the initial orientation of the robot (in radians).
 * `setMaxWheelsSpeed(double leftMaxSpeed, double rightMaxSpeed)`: Configures the maximum speed for each wheel (in meters per second).
+* `showTrailer(boolean show)`: Remove or show trailer following the robot's movement.
 * `connectJoystick(Joystick joystick)`: Connects a joystick to control the robot.
 * `startAnimation()`: Begins the animation that represents the robot's movement after completing the required configuration.
 
