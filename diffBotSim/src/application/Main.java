@@ -15,14 +15,15 @@ public class Main extends Application {
 		Joystick joystick = new Joystick(250, 250);
 		
 		// Units are SI (meters, radians, seconds)
-		robot.setRobotShape(RobotGraphics.Shape.CENTERED_SQUARED);
+		robot.setRobotShape(RobotGraphics.Shape.FRONT_WHEEL);
 		robot.setRobotLength(2.2);
 		robot.setWheelsSeparation(1.6);
 		robot.setWheelsRadius(0.4, 0.4);
 		robot.setWorkspaceDimensions(32, 16);
 		robot.setRobotPose(8, 1.9);
 		robot.setRobotOrientation(Math.PI / 2);
-		robot.setMaxWheelsSpeed(9.0, 9.0);
+		robot.setMaxWheelsSpeed(29.0, 29.0);
+		robot.showTrailer(true);
 		robot.connectJoystick(joystick);
 		robot.startAnimation();
 		

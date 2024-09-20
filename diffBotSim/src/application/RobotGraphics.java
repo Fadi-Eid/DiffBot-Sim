@@ -10,6 +10,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Polyline;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Rotate;
 import javafx.util.Duration;
@@ -30,15 +31,21 @@ public class RobotGraphics extends Pane {
 	private double 		orientation = 0.0;
 	private double 		rightWheelSpeed = 0.0, leftWheelSpeed = 0.0;
 	private double		maxRightWheelSpeed = 5.0, maxLeftWheelSpeed = 5.0;
-	private double 		robotLength;
-	
+	private double 		robotLength, robotLength_, wheelSeparation_;
 	// Note: Units are Pixels and Degrees
 	private double		xPose_, yPose_;
 	private double		orientation_;
+	private double 		windowWidth_, windowHeight_;
+	private boolean		showTrailer = true;
 	
 	// Some flags for optimization
 	private boolean		isCollision = false;
 	private boolean		wasRed = false;
+	
+	// array of the points to be traces behind the robot
+	private double[] xPoints = new double[250];
+	private double[] yPoints = new double[250];
+	private int numberOfPoints = 0;
 	
 	// flags that must be set to start the animation
 	boolean isRobotLengthSet, isXPoseSet, isYPoseSet, isWorkspaceWidthSet, isWorkspaceHeightSet,
@@ -54,6 +61,10 @@ public class RobotGraphics extends Pane {
 		animation = new Timeline(new KeyFrame(Duration.millis(1/this.refreshRate * 1000), eventHandler));
 		animation.setCycleCount(Timeline.INDEFINITE);
 		this.setStyle("-fx-border-color: black; -fx-border-width: 2px;");
+		for(int i=0; i<xPoints.length; i++) {
+			xPoints[i] = 0.0;
+			yPoints[i] = 0.0;
+		}
 	}
 	
 	public void startAnimation() throws CannotProceedException {
@@ -93,7 +104,7 @@ public class RobotGraphics extends Pane {
 			this.xPose = 0.0;
 			this.isCollision = true;
 		}
-		else if(this.yPose > this.workspaceHeight) {
+		if(this.yPose > this.workspaceHeight) {
 			this.yPose = this.workspaceHeight;
 			this.isCollision = true;
 		}
@@ -104,11 +115,25 @@ public class RobotGraphics extends Pane {
 		
 		this.orientation += this.angularVel/refreshRate;
 		
-		// remap meters to pixels
+		// Remap meters to pixels
 		this.xPose_ = DimensionsMapper.metersToPixelsX(this, this.xPose);
 		this.yPose_ = DimensionsMapper.metersToPixelsY(this, this.yPose);
-		// remap radians to degrees
+		
+		// Remap radians to degrees
 		this.orientation_ = this.orientation * 180.0 / Math.PI;
+		
+		// Shift previous points to the right
+        for (int i = xPoints.length - 1; i > 0; i--) {
+        	xPoints[i] = xPoints[i - 1];
+        	yPoints[i] = yPoints[i - 1];
+        }
+        // Insert new point
+		this.xPoints[0] = this.xPose_;
+		this.yPoints[0] = this.windowHeight_ - this.yPose_;
+		
+		if(numberOfPoints < this.xPoints.length) {
+			numberOfPoints++;
+		}
 		
 		this.getChildren().clear();
 		this.paint();
@@ -121,40 +146,57 @@ public class RobotGraphics extends Pane {
 			if(!this.wasRed) {
 				this.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
 				this.wasRed = true;
-				System.out.println("Painted to red");
 			}
 		}
 		else if(this.wasRed) {
 			this.setStyle("-fx-border-color: black; -fx-border-width: 2px;");
 			this.wasRed = false;
-			System.out.println("Paint to black");
 		}
 			
 		// draw x/y lines for every meter
 		for(int i = 1; i < (int)this.workspaceWidth; i++) {
-			double section = this.getWidth()/this.workspaceWidth;
-			Line line = new Line(i*section, 0.0, i*section, this.getHeight());
+			double section = windowWidth_/this.workspaceWidth;
+			Line line = new Line(i*section, 0.0, i*section, windowHeight_);
 			line.setStrokeWidth(0.15);
 			this.getChildren().add(line);
 		}
 		for(int i = 1; i < (int)this.workspaceHeight; i++) {
-			double section = this.getHeight()/this.workspaceHeight;
-			Line line = new Line(0.0, i*section, this.getWidth(), i*section);
+			double section = windowHeight_/this.workspaceHeight;
+			Line line = new Line(0.0, i*section, windowWidth_, i*section);
 			line.setStrokeWidth(0.2);
 			line.setStroke(Color.LIGHTSLATEGREY);
 			this.getChildren().add(line);
 		}
+		
+		// Draw the trailing line
+		Polyline trailer = new Polyline();
+		if(this.showTrailer) {
+			trailer.setStrokeWidth(1);
+			trailer.getStrokeDashArray().addAll(15.0, 15.0); // Dash 10 units, gap 5 units
+			for (int i = 0; i < numberOfPoints; i++) {
+				trailer.getPoints().addAll(xPoints[i], yPoints[i]);
+	        }
+			this.getChildren().add(trailer);
+		}
 			
 		if(this.shape == Shape.CENTERED_CIRCLE) {
+			if(this.showTrailer)
+				trailer.setStroke(Color.PALEVIOLETRED);
 			this.paintCenteredCircle();
 		}
 		else if(this.shape == Shape.CENTERED_SQUARED) {
+			if(this.showTrailer)
+				trailer.setStroke(Color.RED);
 			this.paintCenteredSquared();
 		}
 		else if(this.shape == Shape.FRONT_WHEEL) {
+			if(this.showTrailer)
+				trailer.setStroke(Color.LIGHTSKYBLUE);
 			this.paintFrontWheel();
 		}
 		else if(this.shape == Shape.REAR_WHEEL) {
+			if(this.showTrailer)
+				trailer.setStroke(Color.LIGHTCORAL);
 			this.paintRearWheel();
 		}
 	}
@@ -164,35 +206,32 @@ public class RobotGraphics extends Pane {
 		Rectangle rightWheel = new Rectangle();
 		Rectangle leftWheel = new Rectangle();
 		
-		double robotLength_ = DimensionsMapper.metersToPixelsX(this, this.robotLength);
-		double wheelsSeparation_ = DimensionsMapper.metersToPixelsY(this, this.wheelsSeparation);
-		
 		// Position the robot body
 		robotBody.setRadius(robotLength_/2);
-		robotBody.setCenterX(this.xPose_);
-		robotBody.setCenterY(this.getHeight() - this.yPose_);
+		robotBody.setCenterX(xPose_);
+		robotBody.setCenterY(windowHeight_ - yPose_);
 		robotBody.setFill(Color.PALEVIOLETRED);
 		
 		// Position the robot left wheel
-		double leftWheelRadius_ = DimensionsMapper.metersToPixelsX(this, this.leftWheelRadius);
-		double leftWheelX_ = this.xPose_ - (wheelsSeparation_/2) * Math.cos(Math.PI/2 - this.orientation) - leftWheelRadius_;
-		double leftWheelY_ = this.getHeight() - this.yPose_ - (wheelsSeparation_/2) * Math.sin(Math.PI/2 - this.orientation) - leftWheelRadius_/2.6;
+		double leftWheelRadius_ = DimensionsMapper.metersToPixelsX(this, leftWheelRadius);
+		double leftWheelX_ = xPose_ - (wheelSeparation_/2) * Math.cos(Math.PI/2 - orientation) - leftWheelRadius_;
+		double leftWheelY_ = windowHeight_ - yPose_ - (wheelSeparation_/2) * Math.sin(Math.PI/2 - orientation) - leftWheelRadius_/2.6;
 		leftWheel.setX(leftWheelX_);
 		leftWheel.setY(leftWheelY_);
 		leftWheel.setHeight(leftWheelRadius_/1.3);
 		leftWheel.setWidth(leftWheelRadius_*2);
-		leftWheel.setRotate(-this.orientation_);
+		leftWheel.setRotate(-orientation_);
 		leftWheel.setFill(Color.BLACK);
 		
 		// Position the robot right wheel
-		double rightWheelRadius_ = DimensionsMapper.metersToPixelsX(this, this.rightWheelRadius);
-		double rightWheelX_ = this.xPose_ + (wheelsSeparation_/2) * Math.cos(Math.PI/2 - this.orientation) - rightWheelRadius_;
-		double rightWheelY_ = this.getHeight() - this.yPose_ + (wheelsSeparation_/2) * Math.sin(Math.PI/2 - this.orientation) - rightWheelRadius_/2.6;
+		double rightWheelRadius_ = DimensionsMapper.metersToPixelsX(this, rightWheelRadius);
+		double rightWheelX_ = xPose_ + (wheelSeparation_/2) * Math.cos(Math.PI/2 - orientation) - rightWheelRadius_;
+		double rightWheelY_ = windowHeight_ - yPose_ + (wheelSeparation_/2) * Math.sin(Math.PI/2 - orientation) - rightWheelRadius_/2.6;
 		rightWheel.setX(rightWheelX_);
 		rightWheel.setY(rightWheelY_);
 		rightWheel.setHeight(rightWheelRadius_/1.3);
 		rightWheel.setWidth(rightWheelRadius_*2);
-		rightWheel.setRotate(-this.orientation_);
+		rightWheel.setRotate(-orientation_);
 		rightWheel.setFill(Color.BLACK);
 		
 		this.getChildren().addAll(robotBody, leftWheel, rightWheel);
@@ -203,37 +242,34 @@ public class RobotGraphics extends Pane {
 		Rectangle rightWheel = new Rectangle();
 		Rectangle leftWheel = new Rectangle();
 		
-		double robotLength_ = DimensionsMapper.metersToPixelsX(this, this.robotLength);
-		double wheelsSeparation_ = DimensionsMapper.metersToPixelsY(this, this.wheelsSeparation);
-		
 		// Position the robot body
 		robotBody.setWidth(robotLength_);
-		robotBody.setHeight(wheelsSeparation_);
-		robotBody.setX(this.xPose_ - robotLength_/2);
-		robotBody.setY(this.getHeight() - this.yPose_ - wheelsSeparation_/2);
-		robotBody.setRotate(-this.orientation_);
+		robotBody.setHeight(wheelSeparation_);
+		robotBody.setX(xPose_ - robotLength_/2);
+		robotBody.setY(this.getHeight() - yPose_ - wheelSeparation_/2);
+		robotBody.setRotate(-orientation_);
 		robotBody.setFill(Color.RED);
 		
 		// Position the robot left wheel
-		double leftWheelRadius_ = DimensionsMapper.metersToPixelsX(this, this.leftWheelRadius);
-		double leftWheelX_ = this.xPose_ - (wheelsSeparation_/2) * Math.cos(Math.PI/2 - this.orientation) - leftWheelRadius_;
-		double leftWheelY_ = this.getHeight() - this.yPose_ - (wheelsSeparation_/2) * Math.sin(Math.PI/2 - this.orientation) - leftWheelRadius_/2.6;
+		double leftWheelRadius_ = DimensionsMapper.metersToPixelsX(this, leftWheelRadius);
+		double leftWheelX_ = xPose_ - (wheelSeparation_/2) * Math.cos(Math.PI/2 - orientation) - leftWheelRadius_;
+		double leftWheelY_ = windowHeight_ - yPose_ - (wheelSeparation_/2) * Math.sin(Math.PI/2 - orientation) - leftWheelRadius_/2.6;
 		leftWheel.setX(leftWheelX_);
 		leftWheel.setY(leftWheelY_);
 		leftWheel.setHeight(leftWheelRadius_/1.3);
 		leftWheel.setWidth(leftWheelRadius_*2);
-		leftWheel.setRotate(-this.orientation_);
+		leftWheel.setRotate(-orientation_);
 		leftWheel.setFill(Color.BLACK);
 		
 		// Position the robot right wheel
-		double rightWheelRadius_ = DimensionsMapper.metersToPixelsX(this, this.rightWheelRadius);
-		double rightWheelX_ = this.xPose_ + (wheelsSeparation_/2) * Math.cos(Math.PI/2 - this.orientation) - rightWheelRadius_;
-		double rightWheelY_ = this.getHeight() - this.yPose_ + (wheelsSeparation_/2) * Math.sin(Math.PI/2 - this.orientation) - rightWheelRadius_/2.6;
+		double rightWheelRadius_ = DimensionsMapper.metersToPixelsX(this, rightWheelRadius);
+		double rightWheelX_ = xPose_ + (wheelSeparation_/2) * Math.cos(Math.PI/2 - orientation) - rightWheelRadius_;
+		double rightWheelY_ = windowHeight_ - yPose_ + (wheelSeparation_/2) * Math.sin(Math.PI/2 - orientation) - rightWheelRadius_/2.6;
 		rightWheel.setX(rightWheelX_);
 		rightWheel.setY(rightWheelY_);
 		rightWheel.setHeight(rightWheelRadius_/1.3);
 		rightWheel.setWidth(rightWheelRadius_*2);
-		rightWheel.setRotate(-this.orientation_);
+		rightWheel.setRotate(-orientation_);
 		rightWheel.setFill(Color.BLACK);
 		
 		this.getChildren().addAll(robotBody, leftWheel, rightWheel);
@@ -245,43 +281,40 @@ public class RobotGraphics extends Pane {
 		Rectangle leftWheel = new Rectangle();
 		Circle caster = new Circle();
 		
-		double robotLength_ = DimensionsMapper.metersToPixelsX(this, this.robotLength);
-		double wheelsSeparation_ = DimensionsMapper.metersToPixelsY(this, this.wheelsSeparation);
-		
 		// Position the robot body
 		robotBody.setWidth(robotLength_);
-		robotBody.setHeight(wheelsSeparation_);
-		robotBody.setX(this.xPose_ - robotLength_);
-		robotBody.setY(this.getHeight() - this.yPose_ - wheelsSeparation_/2);
-		robotBody.getTransforms().add(new Rotate(-this.orientation_, this.xPose_, this.getHeight() - this.yPose_));
+		robotBody.setHeight(wheelSeparation_);
+		robotBody.setX(xPose_ - robotLength_);
+		robotBody.setY(this.getHeight() - yPose_ - wheelSeparation_/2);
+		robotBody.getTransforms().add(new Rotate(-orientation_, xPose_, windowHeight_ - yPose_));
 		robotBody.setFill(Color.LIGHTSKYBLUE);
 		
 		// Position the robot left wheel
-		double leftWheelRadius_ = DimensionsMapper.metersToPixelsX(this, this.leftWheelRadius);
-		double leftWheelX_ = this.xPose_ - (wheelsSeparation_/2) * Math.cos(Math.PI/2 - this.orientation) - leftWheelRadius_;
-		double leftWheelY_ = this.getHeight() - this.yPose_ - (wheelsSeparation_/2) * Math.sin(Math.PI/2 - this.orientation) - leftWheelRadius_/2.6;
+		double leftWheelRadius_ = DimensionsMapper.metersToPixelsX(this, leftWheelRadius);
+		double leftWheelX_ = xPose_ - (wheelSeparation_/2) * Math.cos(Math.PI/2 - orientation) - leftWheelRadius_;
+		double leftWheelY_ = this.getHeight() - yPose_ - (wheelSeparation_/2) * Math.sin(Math.PI/2 - orientation) - leftWheelRadius_/2.6;
 		leftWheel.setX(leftWheelX_);
 		leftWheel.setY(leftWheelY_);
 		leftWheel.setHeight(leftWheelRadius_/1.3);
 		leftWheel.setWidth(leftWheelRadius_*2);
-		leftWheel.setRotate(-this.orientation_);
+		leftWheel.setRotate(-orientation_);
 		leftWheel.setFill(Color.BLACK);
 		
 		// Position the robot right wheel
-		double rightWheelRadius_ = DimensionsMapper.metersToPixelsX(this, this.rightWheelRadius);
-		double rightWheelX_ = this.xPose_ + (wheelsSeparation_/2) * Math.cos(Math.PI/2 - this.orientation) - rightWheelRadius_;
-		double rightWheelY_ = this.getHeight() - this.yPose_ + (wheelsSeparation_/2) * Math.sin(Math.PI/2 - this.orientation) - rightWheelRadius_/2.6;
+		double rightWheelRadius_ = DimensionsMapper.metersToPixelsX(this, rightWheelRadius);
+		double rightWheelX_ = xPose_ + (wheelSeparation_/2) * Math.cos(Math.PI/2 - orientation) - rightWheelRadius_;
+		double rightWheelY_ = windowHeight_ - yPose_ + (wheelSeparation_/2) * Math.sin(Math.PI/2 - orientation) - rightWheelRadius_/2.6;
 		rightWheel.setX(rightWheelX_);
 		rightWheel.setY(rightWheelY_);
 		rightWheel.setHeight(rightWheelRadius_/1.3);
 		rightWheel.setWidth(rightWheelRadius_*2);
-		rightWheel.setRotate(-this.orientation_);
+		rightWheel.setRotate(-orientation_);
 		rightWheel.setFill(Color.BLACK);
 		
 		// Position the caster wheel
 		double casterDist_ = 0.75 * robotLength_;
-		double casterX_ = xPose_ - Math.cos(this.orientation)*casterDist_;
-		double casterY_ = this.getHeight() - yPose_ + Math.sin(this.orientation)*casterDist_;
+		double casterX_ = xPose_ - Math.cos(orientation)*casterDist_;
+		double casterY_ = windowHeight_ - yPose_ + Math.sin(orientation)*casterDist_;
 		caster.setRadius(rightWheelRadius_/4.0);
 		caster.setCenterX(casterX_);
 		caster.setCenterY(casterY_);
@@ -296,43 +329,40 @@ public class RobotGraphics extends Pane {
 		Rectangle leftWheel = new Rectangle();
 		Circle caster = new Circle();
 		
-		double robotLength_ = DimensionsMapper.metersToPixelsX(this, this.robotLength);
-		double wheelsSeparation_ = DimensionsMapper.metersToPixelsY(this, this.wheelsSeparation);
-		
 		// Position the robot body
 		robotBody.setWidth(robotLength_);
-		robotBody.setHeight(wheelsSeparation_);
-		robotBody.setX(this.xPose_);
-		robotBody.setY(this.getHeight() - this.yPose_ - wheelsSeparation_/2);
-		robotBody.getTransforms().add(new Rotate(-this.orientation_, this.xPose_, this.getHeight() - this.yPose_));
+		robotBody.setHeight(wheelSeparation_);
+		robotBody.setX(xPose_);
+		robotBody.setY(windowHeight_ - yPose_ - wheelSeparation_/2);
+		robotBody.getTransforms().add(new Rotate(-orientation_, xPose_, windowHeight_ - yPose_));
 		robotBody.setFill(Color.LIGHTCORAL);
 		
 		// Position the robot left wheel
-		double leftWheelRadius_ = DimensionsMapper.metersToPixelsX(this, this.leftWheelRadius);
-		double leftWheelX_ = this.xPose_ - (wheelsSeparation_/2) * Math.cos(Math.PI/2 - this.orientation) - leftWheelRadius_;
-		double leftWheelY_ = this.getHeight() - this.yPose_ - (wheelsSeparation_/2) * Math.sin(Math.PI/2 - this.orientation) - leftWheelRadius_/2.6;
+		double leftWheelRadius_ = DimensionsMapper.metersToPixelsX(this, leftWheelRadius);
+		double leftWheelX_ = xPose_ - (wheelSeparation_/2) * Math.cos(Math.PI/2 - orientation) - leftWheelRadius_;
+		double leftWheelY_ = windowHeight_ - yPose_ - (wheelSeparation_/2) * Math.sin(Math.PI/2 - orientation) - leftWheelRadius_/2.6;
 		leftWheel.setX(leftWheelX_);
 		leftWheel.setY(leftWheelY_);
 		leftWheel.setHeight(leftWheelRadius_/1.3);
 		leftWheel.setWidth(leftWheelRadius_*2);
-		leftWheel.setRotate(-this.orientation_);
+		leftWheel.setRotate(-orientation_);
 		leftWheel.setFill(Color.BLACK);
 		
 		// Position the robot right wheel
-		double rightWheelRadius_ = DimensionsMapper.metersToPixelsX(this, this.rightWheelRadius);
-		double rightWheelX_ = this.xPose_ + (wheelsSeparation_/2) * Math.cos(Math.PI/2 - this.orientation) - rightWheelRadius_;
-		double rightWheelY_ = this.getHeight() - this.yPose_ + (wheelsSeparation_/2) * Math.sin(Math.PI/2 - this.orientation) - rightWheelRadius_/2.6;
+		double rightWheelRadius_ = DimensionsMapper.metersToPixelsX(this, rightWheelRadius);
+		double rightWheelX_ = xPose_ + (wheelSeparation_/2) * Math.cos(Math.PI/2 - orientation) - rightWheelRadius_;
+		double rightWheelY_ = windowHeight_ - yPose_ + (wheelSeparation_/2) * Math.sin(Math.PI/2 - orientation) - rightWheelRadius_/2.6;
 		rightWheel.setX(rightWheelX_);
 		rightWheel.setY(rightWheelY_);
 		rightWheel.setHeight(rightWheelRadius_/1.3);
 		rightWheel.setWidth(rightWheelRadius_*2);
-		rightWheel.setRotate(-this.orientation_);
+		rightWheel.setRotate(-orientation_);
 		rightWheel.setFill(Color.BLACK);
 		
 		// Position the caster wheel
 		double casterDist_ = 0.75 * robotLength_;
-		double casterX_ = xPose_ + Math.cos(this.orientation)*casterDist_;
-		double casterY_ = this.getHeight() - yPose_ - Math.sin(this.orientation)*casterDist_;
+		double casterX_ = xPose_ + Math.cos(orientation)*casterDist_;
+		double casterY_ = windowHeight_ - yPose_ - Math.sin(orientation)*casterDist_;
 		caster.setRadius(rightWheelRadius_/4.0);
 		caster.setCenterX(casterX_);
 		caster.setCenterY(casterY_);
@@ -402,6 +432,9 @@ public class RobotGraphics extends Pane {
 		this.maxLeftWheelSpeed = maxLeft;
 		this.maxRightWheelSpeed = maxRight;
 	}
+	void showTrailer(boolean show) {
+		this.showTrailer = show;
+	}
 	
 	double getRightWheelRadius() { return this.rightWheelRadius; }
 	double getLeftWheelRadius()  { return this.leftWheelRadius;  }
@@ -419,11 +452,27 @@ public class RobotGraphics extends Pane {
 	@Override
 	public void setWidth(double width) {
 		super.setWidth(width);
+		robotLength_ = DimensionsMapper.metersToPixelsX(this, this.robotLength);
+		wheelSeparation_ = DimensionsMapper.metersToPixelsY(this, this.wheelsSeparation);
+		for(int i=0; i<xPoints.length; i++) {
+			xPoints[i] = 0.0;
+			yPoints[i] = 0.0;
+		}
+		numberOfPoints = 0;
+		windowWidth_ = this.getWidth();
 		this.paint();
 	}
 	@Override
 	public void setHeight(double height) {
 		super.setHeight(height);
+		robotLength_ = DimensionsMapper.metersToPixelsX(this, this.robotLength);
+		wheelSeparation_ = DimensionsMapper.metersToPixelsY(this, this.wheelsSeparation);
+		for(int i=0; i<xPoints.length; i++) {
+			xPoints[i] = 0.0;
+			yPoints[i] = 0.0;
+		}
+		numberOfPoints = 0;
+		windowHeight_ = this.getHeight();
 		this.paint();
 	}
 }
