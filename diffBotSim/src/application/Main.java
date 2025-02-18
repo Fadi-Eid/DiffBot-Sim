@@ -12,7 +12,7 @@ public class Main extends Application {
 	public void start(Stage primaryStage) throws CannotProceedException {
 		
 		RobotGraphics robot = new RobotGraphics();
-		Joystick joystick = new Joystick(250, 250);
+		Joystick joystick = new Joystick();
 		
 		// Units are SI (meters, radians, seconds)
 		robot.setRobotShape(RobotGraphics.Shape.FRONT_WHEEL);
